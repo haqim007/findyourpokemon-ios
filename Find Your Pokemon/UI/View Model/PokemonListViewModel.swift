@@ -13,6 +13,8 @@ class PokemonListViewModel: ObservableObject{
     let service: APIServiceProtocol
     private var offset = 0
     private let limit = 30
+    //Flag if all data is completely loaded
+    private var isComplete = false
     
     @Published var items = [Item]()
     @Published var isLoading = false
@@ -47,8 +49,12 @@ class PokemonListViewModel: ObservableObject{
                     self.errorMessage = err.localizedDescription
                     print(err)
                 case .success(let data):
-                    self.items.append(contentsOf: data)
-                    self.setNextPage()
+                    if !data.isEmpty{
+                        self.items.append(contentsOf: data)
+                        self.setNextPage()
+                    }
+                    self.isComplete = data.isEmpty
+                    
                 }
         
             }
@@ -62,6 +68,11 @@ class PokemonListViewModel: ObservableObject{
     }
     
     func shouldLoadMore(currentItem: Item? = nil) -> Bool{
+        
+        if isComplete{
+            return false
+        }
+        
         if isLoading {
             return false
         }
